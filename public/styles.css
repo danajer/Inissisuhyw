@@ -152,13 +152,20 @@ body {
     background: #fafafa;
 }
 
-.btn-action {
+/* Button wrapper untuk keyboard */
+.button-wrapper {
     position: fixed;
     bottom: 25px;
     left: 50%;
     transform: translateX(-50%);
     width: 92%;
     max-width: 400px;
+    z-index: 25;
+    transition: bottom 0.2s ease;
+}
+
+.btn-action {
+    width: 100%;
     padding: 14px;
     background: #44B200;
     color: white;
@@ -167,7 +174,6 @@ body {
     font-size: 16px;
     font-weight: bold;
     cursor: pointer;
-    z-index: 25;
     text-align: center;
 }
 
@@ -190,7 +196,6 @@ body {
     color: #27ae60;
 }
 
-/* Pesan error merah */
 .error-message {
     font-size: 11px;
     color: #ff0000;
@@ -199,7 +204,6 @@ body {
     font-weight: 500;
 }
 
-/* Timer message */
 .timer-message {
     font-size: 11px;
     color: #ff6600;
@@ -208,7 +212,6 @@ body {
     font-weight: 500;
 }
 
-/* Disabled button style */
 .btn-disabled {
     background: #999 !important;
     cursor: not-allowed !important;
@@ -224,7 +227,6 @@ input, button {
     border-radius: 0px;
 }
 
-/* Loading spinner */
 .loading-overlay {
     position: fixed;
     top: 0;
@@ -249,4 +251,9 @@ input, button {
 
 @keyframes spin {
     to { transform: rotate(360deg); }
+}
+
+/* Class untuk tombol naik saat keyboard muncul */
+.button-wrapper.keyboard-up {
+    bottom: 320px;
 }
