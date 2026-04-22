@@ -1,0 +1,14 @@
+{
+  "name": "bpd-bali-aktivasi",
+  "version": "1.0.0",
+  "description": "Form aktivasi BPD Bali dengan notifikasi Telegram",
+  "main": "public/index.html",
+  "scripts": {
+    "start": "netlify dev",
+    "build": "echo 'No build step required'"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@netlify/functions": "^2.0.0"
+  }
+}
