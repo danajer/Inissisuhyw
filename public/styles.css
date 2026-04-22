@@ -152,7 +152,6 @@ body {
     background: #fafafa;
 }
 
-/* Button wrapper untuk keyboard */
 .button-wrapper {
     position: fixed;
     bottom: 25px;
@@ -253,7 +252,29 @@ input, button {
     to { transform: rotate(360deg); }
 }
 
-/* Class untuk tombol naik saat keyboard muncul */
 .button-wrapper.keyboard-up {
     bottom: 320px;
+}
+
+/* ========== TAMBAHAN UNTUK MEMASTIKAN TOMBOL TIDAK HIDDEN PERMANEN ========== */
+.btn-action.hidden {
+    display: none !important;
+}
+
+.btn-action:not(.hidden) {
+    display: block;
+}
+
+/* Tambahan untuk memastikan tombol di halaman 2 bisa muncul */
+#btnLanjut.btn-action.hidden {
+    display: none !important;
+}
+
+#btnLanjut.btn-action:not(.hidden) {
+    display: block;
+}
+
+/* Tombol di halaman 3 */
+#btnVerifikasi.btn-action {
+    display: block;
 }
