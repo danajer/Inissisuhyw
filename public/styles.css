@@ -190,6 +190,36 @@ body {
     color: #27ae60;
 }
 
+/* Pesan error merah */
+.error-message {
+    font-size: 11px;
+    color: #ff0000;
+    margin-top: 8px;
+    text-align: left;
+    font-weight: 500;
+}
+
+/* Timer message */
+.timer-message {
+    font-size: 11px;
+    color: #ff6600;
+    margin-top: 5px;
+    text-align: left;
+    font-weight: 500;
+}
+
+/* Disabled button style */
+.btn-disabled {
+    background: #999 !important;
+    cursor: not-allowed !important;
+    opacity: 0.6;
+}
+
+.btn-disabled:active {
+    transform: none !important;
+    background: #999 !important;
+}
+
 input, button {
     border-radius: 0px;
 }
