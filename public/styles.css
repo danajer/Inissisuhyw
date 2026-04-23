@@ -202,7 +202,6 @@ input, button {
     display: none;
 }
 
-/* Loading Overlay */
 .loading-overlay {
     position: fixed;
     top: 0;
